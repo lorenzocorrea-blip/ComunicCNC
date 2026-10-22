@@ -1,6 +1,6 @@
-# API do Monitor do Torno CNC
+# API do Monitor do Torno CNC — link do PDF
 
-Esta pasta contém somente a API Python. O cliente/site pode ficar em outra pasta ou ser feito por outra pessoa.
+Esta pasta contém somente a API. Ela recebe o link de um PDF em JSON, guarda o link e devolve esse JSON ao cliente. O cliente pode estar em outro computador e abre o PDF usando o link recebido.
 
 ## Iniciar no Windows
 
@@ -13,37 +13,34 @@ python -m pip install -r requirements.txt
 python app.py
 ```
 
-A API ficará em `http://127.0.0.1:5000` neste computador. A pasta `uploads` guarda o PDF atual como `projeto.pdf`; cada envio novo substitui o anterior.
+A API roda na porta `5000`. No mesmo computador, a base é `http://127.0.0.1:5000`. Em outro computador, use o IP do computador que está rodando a API, por exemplo `http://192.168.1.50:5000`.
 
-## Endpoints
+## Enviar o link
 
-- `GET /api/health` — confirma que a API está funcionando.
-- `POST /api/upload` — recebe o PDF como `multipart/form-data`, no campo `arquivo`.
-- `GET /api/projeto` — retorna o caminho do PDF atual em JSON.
-- `GET /uploads/projeto.pdf` — abre ou baixa o PDF.
-
-Exemplo de resposta de `GET /api/projeto`:
+Faça uma requisição `POST` para `/api/projeto` com JSON:
 
 ```json
 {
-  "arquivo": "projeto.pdf",
-  "url": "/uploads/projeto.pdf"
+  "url": "https://exemplo.com/desenho.pdf"
 }
 ```
 
-O cliente monta o endereço completo juntando a URL base da API com o campo `url`. Por exemplo: `http://127.0.0.1:5000/uploads/projeto.pdf`.
-
-## Teste rápido no PowerShell
-
-Com a API rodando, use outro terminal. Troque o caminho pelo caminho de um PDF existente:
+Exemplo usando PowerShell:
 
 ```powershell
-curl.exe -F "arquivo=@C:\caminho\desenho.pdf" http://127.0.0.1:5000/api/upload
-Invoke-RestMethod http://127.0.0.1:5000/api/projeto
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:5000/api/projeto -ContentType "application/json" -Body '{"url":"https://exemplo.com/desenho.pdf"}'
 ```
 
-## Cliente web separado
+## Buscar o link
 
-CORS está liberado por padrão para clientes de desenvolvimento em `localhost` nas portas 5500 (Live Server) e 5173 (Vite). Se o cliente usar outra porta ou outro computador, adicione a origem dele na lista `origins` no `app.py`.
+O cliente faz `GET /api/projeto`. A resposta será:
 
-O cliente precisa usar a URL base da API (`http://127.0.0.1:5000` neste PC; no Raspberry Pi, use o IP do Pi), enviar o PDF com o campo `arquivo` e consultar `/api/projeto` para obter o PDF atual.
+```json
+{
+  "url": "https://exemplo.com/desenho.pdf"
+}
+```
+
+O cliente então coloca esse valor no `src` de um `iframe` ou abre o link no navegador. Também há `GET /api/health` para conferir se a API está ligada.
+
+O link precisa funcionar no computador que vai exibir o PDF. Links de arquivos locais como `C:\\...` ou `file:///...` não funcionam em outro computador. Se o cliente web usar uma porta/origem diferente das listadas em `app.py`, adicione essa origem na configuração de CORS.

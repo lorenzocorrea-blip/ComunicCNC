@@ -1,17 +1,17 @@
+import json
 from pathlib import Path
+from urllib.parse import urlparse
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 BASE_DIR = Path(__file__).resolve().parent
-UPLOAD_DIR = BASE_DIR / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)
+PROJECT_FILE = BASE_DIR / "projeto_atual.json"
 
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # limite de 50 MB
 
-# Permite o cliente web local durante o desenvolvimento.
-# Para outros endereços, adicione a origem do cliente nesta lista.
+# Portas comuns de desenvolvimento local. Se o cliente usar outro endereço,
+# inclua a origem dele nesta lista.
 CORS(app, resources={
     r"/api/*": {
         "origins": [
@@ -24,61 +24,49 @@ CORS(app, resources={
 })
 
 
+def ler_projeto():
+    if not PROJECT_FILE.exists():
+        return None
+    try:
+        return json.loads(PROJECT_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
 @app.get("/api/health")
 def health():
     return jsonify({"status": "ok", "mensagem": "API do monitor CNC está funcionando."})
 
 
-@app.post("/api/upload")
-def receber_pdf():
-    arquivo = request.files.get("arquivo")
+@app.post("/api/projeto")
+def salvar_link_projeto():
+    dados = request.get_json(silent=True)
+    if not isinstance(dados, dict):
+        return jsonify({"erro": "Envie um JSON com o campo 'url'."}), 400
 
-    if arquivo is None or arquivo.filename == "":
-        return jsonify({"erro": "Envie um arquivo no campo 'arquivo'."}), 400
+    url = dados.get("url")
+    if not isinstance(url, str) or not url.strip():
+        return jsonify({"erro": "O campo 'url' é obrigatório."}), 400
 
-    if not arquivo.filename.lower().endswith(".pdf"):
-        return jsonify({"erro": "Só aceito arquivos PDF."}), 400
+    url = url.strip()
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        return jsonify({"erro": "Informe um link válido começando com http:// ou https://."}), 400
 
-    if not arquivo.stream.read(5).startswith(b"%PDF-"):
-        return jsonify({"erro": "O arquivo não parece ser um PDF válido."}), 400
-
-    arquivo.stream.seek(0)
-    caminho_pdf = UPLOAD_DIR / "projeto.pdf"
-    arquivo.save(caminho_pdf)
-
-    return jsonify({
-        "mensagem": "Projeto enviado com sucesso.",
-        "arquivo": "projeto.pdf",
-        "url": "/uploads/projeto.pdf",
-    }), 201
+    projeto = {"url": url}
+    PROJECT_FILE.write_text(json.dumps(projeto, ensure_ascii=False, indent=2), encoding="utf-8")
+    return jsonify({"mensagem": "Link do projeto salvo.", **projeto}), 201
 
 
 @app.get("/api/projeto")
-def consultar_projeto():
-    caminho_pdf = UPLOAD_DIR / "projeto.pdf"
-    if not caminho_pdf.exists():
-        return jsonify({"erro": "Ainda não há projeto enviado."}), 404
-
-    return jsonify({
-        "arquivo": "projeto.pdf",
-        "url": "/uploads/projeto.pdf",
-    })
-
-
-@app.get("/uploads/projeto.pdf")
-def baixar_projeto():
-    caminho_pdf = UPLOAD_DIR / "projeto.pdf"
-    if not caminho_pdf.exists():
-        return jsonify({"erro": "Ainda não há projeto enviado."}), 404
-
-    return send_from_directory(UPLOAD_DIR, "projeto.pdf", mimetype="application/pdf")
-
-
-@app.errorhandler(413)
-def arquivo_muito_grande(_erro):
-    return jsonify({"erro": "O arquivo ultrapassa o limite de 50 MB."}), 413
+def consultar_link_projeto():
+    projeto = ler_projeto()
+    if projeto is None:
+        return jsonify({"erro": "Ainda não há link de projeto cadastrado."}), 404
+    return jsonify(projeto)
 
 
 if __name__ == "__main__":
-    # Para outro aparelho na rede acessar, use o IP deste computador no cliente.
+    # O cliente em outro computador deve usar o IP deste PC/Raspberry Pi,
+    # não localhost, como endereço base da API.
     app.run(host="0.0.0.0", port=5000, debug=False)
