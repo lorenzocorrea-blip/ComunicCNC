@@ -1,0 +1,16 @@
+TESTE LOCAL — COMUNICCNC NODE.JS
+
+1) Instale Node.js 20 ou superior.
+2) Abra a pasta no VS Code.
+3) Abra Terminal -> New Terminal.
+4) Execute:
+   npm install
+   npm start
+5) Navegador do mesmo PC:
+   http://127.0.0.1:5000/api/health
+6) Painel do professor:
+   http://127.0.0.1:5000
+7) Modo monitor no mesmo PC:
+   http://127.0.0.1:5000/?modo=monitor
+
+Para usar sem rede local, publique o serviço no Render e configure Supabase Storage conforme README.md. Depois, os monitores usam a URL HTTPS do Render em vez do IP do PC do professor.

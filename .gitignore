@@ -1,4 +1,6 @@
-__pycache__/
-.venv/
-venv/
+node_modules/
+.env
+npm-debug.log*
 uploads/*.pdf
+uploads/*.tmp
+uploads/projeto-meta.json

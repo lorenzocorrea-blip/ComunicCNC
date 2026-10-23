@@ -1,0 +1,18 @@
+{
+  "name": "comuniccnc-online",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Sistema Node.js para publicar PDFs do professor e sincronizar monitores CNC pela internet.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2"
+  }
+}

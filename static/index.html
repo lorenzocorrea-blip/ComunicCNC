@@ -3,35 +3,97 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Monitor do Torno CNC</title>
+  <meta name="theme-color" content="#08111f">
+  <meta name="description" content="Sistema online para publicar e exibir projetos PDF nos monitores do torno CNC de qualquer rede com internet.">
+  <title>Torno CNC | Central de Projetos</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <main class="container">
-    <header>
-      <p class="eyebrow">Projeto escolar</p>
-      <h1>Monitor do Torno CNC</h1>
-      <p>Envie o desenho da peça em PDF para exibi-lo neste monitor.</p>
+  <div class="app-shell" id="teacherView">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Torno CNC - início">
+        <span class="brand-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 12h22l6 6v18H7z"/><path d="M29 12v7h6M12 25h18M12 30h12"/><circle cx="35" cy="34" r="7"/><path d="M35 30v4l3 2"/></svg></span>
+        <span class="brand-text"><strong>TORNO<span> CNC</span></strong><small> CENTRAL DE PROJETOS</small></span>
+      </a>
+      <div class="server-pill"><span class="live-dot" id="connectionDot"></span><span id="connectionText">Verificando servidor...</span></div>
     </header>
 
-    <section class="upload-card" aria-labelledby="upload-title">
-      <h2 id="upload-title">Enviar projeto</h2>
-      <form id="upload-form">
-        <label for="pdf-file">Arquivo do projeto (PDF, até 50 MB)</label>
-        <input id="pdf-file" name="arquivo" type="file" accept="application/pdf,.pdf" required>
-        <button id="upload-button" type="submit">Enviar PDF</button>
-      </form>
-      <p id="status" role="status" aria-live="polite">Nenhum projeto carregado.</p>
-    </section>
+    <main class="dashboard">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> FLUXO DIGITAL DE PRODUÇÃO</div>
+          <h1>O projeto certo.<br><span>Em todas as telas.</span></h1>
+          <p>Publique o desenho técnico uma única vez. Os monitores recebem o PDF automaticamente pela internet, mesmo quando estão em redes diferentes.</p>
+          <div class="hero-meta"><span class="meta-icon">↻</span> Sincronização automática a cada 3 segundos</div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="blue-glow"></div>
+          <div class="technical-grid"></div>
+          <div class="blueprint-card">
+            <div class="blueprint-top"><span>DESENHO TÉCNICO</span><span class="blueprint-dot"></span></div>
+            <svg class="blueprint" viewBox="0 0 330 205" fill="none">
+              <g stroke="#6bd5ff" stroke-width="1.4" opacity=".92">
+                <path d="M62 72h54l12 12v38l-12 12H62z"/><path d="M128 84h72v38h-72z"/><path d="M200 94h34v18h-34z"/><path d="M234 98h22v10h-22z"/>
+                <path d="M52 64h66M52 140h66M52 64v76M118 64v76M42 64h10M42 140h10" stroke-dasharray="3 3"/>
+                <path d="M62 53v-11M118 53v-11M62 47h56M62 145v12M118 145v12M62 151h56"/>
+                <path d="M138 75v-12M190 75v-12M138 69h52M138 132v12M190 132v12M138 138h52"/>
+                <circle cx="89" cy="103" r="14"/><circle cx="89" cy="103" r="4"/><path d="M75 103h28M89 89v28"/>
+                <path d="M211 89v-14M224 89v-14M211 80h13M211 118v14M224 118v14M211 127h13"/>
+                <path d="M60 172h200M60 168v8M260 168v8M72 185h68M72 181v8M140 181v8" opacity=".55"/>
+              </g>
+              <g fill="#a5eaff" font-size="8" font-family="monospace"><text x="79" y="38">56 mm</text><text x="146" y="59">42 mm</text><text x="265" y="107">Ø18</text><text x="65" y="198">CNC / PROJETO DIGITAL</text></g>
+            </svg>
+            <div class="blueprint-bottom"><span>PDF • VISUALIZAÇÃO AO VIVO</span><span>01 / 01</span></div>
+          </div>
+          <div class="floating-chip chip-one"><span class="chip-check">✓</span> Envio centralizado</div>
+          <div class="floating-chip chip-two"><span class="chip-pulse"></span> Monitores sincronizados</div>
+        </div>
+      </section>
 
-    <section class="viewer-card" aria-labelledby="viewer-title">
-      <div class="viewer-heading">
-        <h2 id="viewer-title">Projeto da peça</h2>
-        <button id="refresh-button" class="secondary-button" type="button">Atualizar</button>
-      </div>
-      <iframe id="pdf-viewer" title="Visualização do projeto em PDF"></iframe>
-    </section>
+      <section class="content-grid">
+        <article class="panel publish-panel">
+          <div class="section-heading"><div class="section-icon upload-icon">↑</div><div><div class="section-kicker">PAINEL DO PROFESSOR</div><h2>Publicar projeto</h2><p>Escolha o PDF que deverá aparecer nos monitores.</p></div></div>
+          <form id="uploadForm">
+            <div class="password-field">
+              <label for="adminPassword">Senha do professor <span>Obrigatória na versão online</span></label>
+              <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Digite a senha definida na hospedagem" maxlength="128">
+              <small>A senha é configurada nas variáveis de ambiente da hospedagem. No teste local, ela pode ficar vazia.</small>
+            </div>
+            <label class="dropzone" id="dropzone" for="pdfFile">
+              <span class="pdf-symbol">PDF</span>
+              <span class="drop-title" id="fileLabel">Selecione um arquivo PDF</span>
+              <span class="drop-subtitle">Clique para procurar no computador</span>
+              <span class="drop-limit"><span class="tiny-check">✓</span> PDF até 50 MB</span>
+              <input id="pdfFile" type="file" accept="application/pdf,.pdf" required>
+            </label>
+            <button id="publishButton" class="primary-button" type="submit"><span class="button-symbol">↑</span><span>Publicar nos monitores</span><span class="button-arrow">→</span></button>
+            <p id="uploadMessage" class="message" role="status" aria-live="polite"></p>
+          </form>
+          <div class="safe-note"><span>ⓘ</span><span>O novo envio substitui o projeto anterior em todos os monitores conectados.</span></div>
+        </article>
+
+        <article class="panel current-panel">
+          <div class="section-heading"><div class="section-icon screen-icon">▤</div><div><div class="section-kicker">STATUS DO SISTEMA</div><h2>Projeto atual</h2><p>Informações do arquivo publicado.</p></div></div>
+          <div class="current-document">
+            <div class="document-icon"><svg viewBox="0 0 50 58" aria-hidden="true"><path d="M8 3h22l12 12v40H8z"/><path d="M30 3v13h12M15 28h20M15 35h20M15 42h13"/><text x="25" y="52" text-anchor="middle">PDF</text></svg></div>
+            <div class="document-info"><strong id="projectName">Nenhum projeto ainda</strong><span id="projectDetail">Aguardando o primeiro envio</span><div id="projectBadge" class="status-badge waiting"><span></span> AGUARDANDO</div></div>
+          </div>
+          <div class="project-actions"><a id="openProject" class="secondary-button hidden" href="/uploads/projeto.pdf" target="_blank" rel="noopener">Abrir PDF <span>↗</span></a><a class="secondary-button preview-button" href="/?modo=monitor" target="_blank" rel="noopener">Prévia do monitor <span>↗</span></a></div>
+          <div class="stat-row"><div class="stat"><span class="stat-number" id="syncState">—</span><span class="stat-label">Sincronização</span></div><div class="stat-divider"></div><div class="stat"><span class="stat-number">3 s</span><span class="stat-label">Intervalo de atualização</span></div></div>
+        </article>
+      </section>
+
+      <section class="connection-hint"><div class="hint-icon">⌁</div><div><strong>Como conectar o PC2</strong><p>Depois de publicar o sistema na internet, abra a URL HTTPS fornecida pela hospedagem com <code>/?modo=monitor</code> em cada monitor. O PC do professor e os monitores podem estar em redes diferentes, mas precisam de acesso à internet.</p></div></section>
+    </main>
+    <footer class="footer"><span>TORNO CNC <i>•</i> SISTEMA ONLINE DE PROJETOS</span><span>Desenvolvido para o fluxo digital da oficina</span></footer>
+  </div>
+
+  <main id="monitorView" class="monitor-view hidden">
+    <div class="monitor-bar"><div class="monitor-brand"><span class="monitor-brand-mark">CNC</span><span><strong>TORNO CNC</strong><small>PROJETO DE OPERAÇÃO</small></span></div><div class="monitor-live"><span class="live-dot" id="monitorDot"></span><span id="monitorStatus">Conectando ao servidor...</span></div></div>
+    <section id="monitorEmpty" class="monitor-empty"><div class="empty-graphic"><div class="empty-ring ring-one"></div><div class="empty-ring ring-two"></div><div class="empty-doc">PDF</div></div><div class="eyebrow"><span class="eyebrow-line"></span> MONITOR DE PROJETOS</div><h1 id="monitorTitle">Aguardando o projeto</h1><p id="monitorDescription">Quando o professor publicar um PDF, ele aparecerá nesta tela automaticamente pela internet.</p><div class="waiting-indicator"><span></span><span></span><span></span><small>Aguardando sincronização</small></div></section>
+    <iframe id="pdfFrame" class="pdf-frame hidden" title="Projeto técnico enviado pelo professor"></iframe>
+    <div id="monitorToast" class="monitor-toast hidden"><span>✓</span><span id="monitorToastText">Novo projeto recebido</span></div>
   </main>
-  <script src="/static/app.js" defer></script>
+  <script src="/static/app.js"></script>
 </body>
 </html>
